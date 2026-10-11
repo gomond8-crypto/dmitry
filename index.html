@@ -465,7 +465,7 @@ p{margin:0}
   .sit-cta .btn .rt::after{display:none}
   .sit-cta .btn .rt{transform:none!important}
   /* «Чистая вода»: ниже и мельче, чтобы читалось */
-  .why .giant{top:300px;font-size:58px;color:rgba(255,255,255,.72)}
+  .why .giant{top:318px;font-size:56px;color:rgba(255,255,255,.85)}
 }
 </style>
 <style id="tailwind">/* Tailwind CSS 3.4.16: собран заранее из конфига бренда (префикс tw-), в браузере ничего не компилируется */
@@ -1209,8 +1209,8 @@ function mount(canvas,opts){
     if(!reduce)requestAnimationFrame(loop)}
   requestAnimationFrame(loop);
 }
-mount(document.getElementById('filter3d-quiz'),{dist:14.5,camY:1,lookY:0,fov:30,scale:1});
-mount(document.getElementById('filter3d-why'),{dist:12.5,camY:.6,lookY:.2,fov:30,scale:1,y:.1,exp:.9,rim:1.8,rimCol:0x8a98f0});
+mount(document.getElementById('filter3d-quiz'),{dist:SMALL?19:14.5,camY:1,lookY:0,fov:30,scale:1});
+mount(document.getElementById('filter3d-why'),{dist:SMALL?17.5:12.5,camY:.6,lookY:SMALL?-.2:.2,fov:30,scale:1,y:.1,exp:.9,rim:1.8,rimCol:0x8a98f0});
 })();
 </script>
 
