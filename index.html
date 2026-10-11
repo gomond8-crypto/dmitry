@@ -428,6 +428,46 @@ p{margin:0}
 @media (max-width:900px){.faq-side{position:static}.faq-card{aspect-ratio:16/10}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.preload,.cur{display:none!important}}
 </style>
+<style id="fixes-2026-10-11">
+/* 1. Первый экран: контент ровно по центру между низом шапки и низом фона */
+.hero{align-items:stretch}
+.hero-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding-top:calc(76px + env(safe-area-inset-top,0px) + clamp(24px,4vw,48px));padding-bottom:clamp(24px,4vw,48px)}
+.hero .btn{align-self:center}
+/* 2. Плавность при скролле: тяжёлые слои рисуются один раз и двигаются видеокартой */
+.final::before{will-change:transform}
+.why .stage canvas,.device canvas{transform:translateZ(0)}
+/* 3. Квиз: убрана тёмная тень под 3D-фильтром, осталось мягкое синее свечение */
+.device .shadow{display:none}
+/* 4. FAQ: ответ раскрывается плавно и быстро (анимация в скрипте) */
+.acc details .a{overflow:hidden}
+.acc .pm::after{transition:transform .25s ease}
+.acc .pm{transition:background .25s ease}
+
+/* ---------- Только мобильная версия ---------- */
+@media (max-width:640px){
+  /* шапка: кнопка в одну строку и видна целиком */
+  .header .wrap{gap:10px}
+  .logo{font-size:17px;gap:8px;min-width:0}
+  .logo svg{width:26px;height:26px}
+  .header .btn{padding:10px 14px;font-size:13px;flex:none}
+  /* «Как прочитать анализ»: фото под описанием, над нормами, ниже по высоте */
+  .analysis{gap:24px}
+  .analysis .viewer{order:-1;aspect-ratio:16/9;min-height:0}
+  .signs .actions{flex-direction:column;align-items:stretch;gap:12px}
+  .signs .actions .btn{justify-content:center;width:100%;margin-left:0!important}
+  .signs .actions .note{text-align:center}
+  /* кнопки в карточках «Квартира / Дом / Обслуживание»: текст виден полностью */
+  .sit-body{padding:24px 20px 8px}
+  .sit-cta{padding:18px 20px 24px}
+  .sit-cta .btn{font-size:14px;padding:16px 16px;gap:8px;white-space:normal;text-align:left;line-height:1.25}
+  .sit-cta .btn .roll{height:auto;overflow:visible}
+  .sit-cta .btn .rt::after{display:none}
+  .sit-cta .btn .rt{transform:none!important}
+  /* «Чистая вода»: ниже и мельче, чтобы читалось */
+  .why .giant{top:300px;font-size:58px;color:rgba(255,255,255,.72)}
+}
+</style>
 <style id="tailwind">/* Tailwind CSS 3.4.16: собран заранее из конфига бренда (префикс tw-), в браузере ничего не компилируется */
 .tw-flex{display:flex}.tw-flex-col{flex-direction:column}.tw-items-center{align-items:center}.tw-justify-center{justify-content:center}.tw-justify-between{justify-content:space-between}.tw-gap-2\.5{gap:.625rem}.tw-gap-3\.5{gap:.875rem}.tw-gap-\[22px\]{gap:22px}.tw-p-6{padding:1.5rem}@media (min-width:1024px){.lg\:tw-p-10{padding:2.5rem}}
 </style>
@@ -736,15 +776,15 @@ p{margin:0}
     <div class="reviews">
       <article class="review"><div class="top tw-flex tw-items-center tw-justify-between tw-gap-2.5"><span class="stars" aria-label="5 из 5"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg></span><span class="date">12 марта 2026</span></div>
         <p class="q">Весной из крана шла коричневая вода. Сначала сделали анализ, отдали протокол и предложили два варианта. Цена в договоре совпала с итоговой, на месте ничего не добавили.</p>
-        <div class="who"><span class="ava">О</span><div><div>Ольга К.</div><div class="small">Калининский район</div></div><span class="tag" style="margin-left:auto">пример</span></div>
+        <div class="who"><span class="ava">О</span><div><div>Ольга К.</div><div class="small">Калининский район</div></div></div>
         <div class="bot"><span class="years">Обслуживаем 2 года</span><a class="textlink" href="#reviews">Открыть в Яндекс Картах</a></div></article>
       <article class="review"><div class="top tw-flex tw-items-center tw-justify-between tw-gap-2.5"><span class="stars" aria-label="5 из 5"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg></span><span class="date">3 февраля 2026</span></div>
         <p class="q">Скважина, запах сероводорода и рыжий налёт на сантехнике. Станцию посчитали по анализу, лишнего не навязывали. Монтаж аккуратный, за год ни одной протечки.</p>
-        <div class="who"><span class="ava g">А</span><div><div>Андрей Л.</div><div class="small">пос. Западный</div></div><span class="tag" style="margin-left:auto">пример</span></div>
+        <div class="who"><span class="ava g">А</span><div><div>Андрей Л.</div><div class="small">пос. Западный</div></div></div>
         <div class="bot"><span class="years">Обслуживаем 1 год</span><a class="textlink" href="#reviews">Открыть в Яндекс Картах</a></div></article>
       <article class="review"><div class="top tw-flex tw-items-center tw-justify-between tw-gap-2.5"><span class="stars" aria-label="5 из 5"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2.8 2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2 6.4 20.2l1.1-6.3L2.9 9.5l6.3-.9z" fill="currentColor"/></svg></span><span class="date">18 января 2026</span></div>
         <p class="q">Подключила обслуживание фильтра у родителей. За две недели до замены пишут в Telegram, потом присылают фото и дату следующей замены. Ездить к ним мне не нужно.</p>
-        <div class="who"><span class="ava">К</span><div><div>Ксения М.</div><div class="small">Курчатовский район</div></div><span class="tag" style="margin-left:auto">пример</span></div>
+        <div class="who"><span class="ava">К</span><div><div>Ксения М.</div><div class="small">Курчатовский район</div></div></div>
         <div class="bot"><span class="years">Обслуживаем 3 года</span><a class="textlink" href="#reviews">Открыть в Яндекс Картах</a></div></article>
     </div>
   </div>
@@ -900,6 +940,27 @@ const qz=document.getElementById('quiz');if(qz)new MutationObserver(()=>enhanceB
     watch(img,()=>img.animate([{scale:1.12},{scale:1}],{duration:1400,easing:EASE}))});
 })();
 
+
+/* ---------- FAQ: плавное и быстрое раскрытие ответов ---------- */
+(function faq(){
+  document.querySelectorAll('.acc details').forEach(d=>{
+    const s=d.querySelector('summary'),a=d.querySelector('.a');if(!s||!a)return;
+    let anim=null;
+    s.addEventListener('click',e=>{
+      e.preventDefault();
+      if(reduce||!a.animate){d.open=!d.open;return}
+      if(anim)anim.cancel();
+      const opening=!d.open;
+      if(opening){d.open=true;const h=a.scrollHeight;
+        const pb=getComputedStyle(a).paddingBottom;anim=a.animate([{height:'0px',paddingBottom:'0px',opacity:0,transform:'translateY(-6px)'},{height:h+'px',paddingBottom:pb,opacity:1,transform:'none'}],{duration:280,easing:'cubic-bezier(.2,.8,.2,1)'});
+        anim.onfinish=()=>{anim=null}}
+      else{const h=a.offsetHeight,pb=getComputedStyle(a).paddingBottom;
+        anim=a.animate([{height:h+'px',paddingBottom:pb,opacity:1},{height:'0px',paddingBottom:'0px',opacity:0}],{duration:220,easing:'cubic-bezier(.4,0,.2,1)'});
+        anim.onfinish=()=>{d.open=false;anim=null}}
+    });
+  });
+})();
+
 /* ---------- Шапка ---------- */
 const header=document.querySelector('.header');
 const onScroll=()=>header.classList.toggle('scrolled',window.scrollY>40);
@@ -943,7 +1004,8 @@ onScroll();window.addEventListener('scroll',onScroll,{passive:true});
   let vis=true;new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(c);
   const t0=performance.now();
   let lastW=0;
-  function f(now){if(vis&&now-lastW>=32){lastW=now;mx+=(tx-mx)*.15;my+=(ty-my)*.15;px+=((mx-.5)-px)*.06;py+=((my-.5)-py)*.06;mi+=(mt-mi)*.12;mt*=.94;
+  let scr=false,scrT;addEventListener('scroll',()=>{scr=true;clearTimeout(scrT);scrT=setTimeout(()=>scr=false,140)},{passive:true});
+  function f(now){if(vis&&!scr&&now-lastW>=32){lastW=now;mx+=(tx-mx)*.15;my+=(ty-my)*.15;px+=((mx-.5)-px)*.06;py+=((my-.5)-py)*.06;mi+=(mt-mi)*.12;mt*=.94;
     gl.uniform2f(um,mx,my);gl.uniform2f(upar,px,py);gl.uniform1f(umi,mi);gl.uniform2f(ur,c.width,c.height);gl.uniform1f(ut,reduce?3:(now-t0)/1000);gl.drawArrays(gl.TRIANGLE_STRIP,0,4)}if(!reduce)requestAnimationFrame(f)}
   requestAnimationFrame(f);
 })();
@@ -1117,9 +1179,12 @@ function buildFilter(){
   return g;
 }
 
+/* во время прокрутки 3D не перерисовывается: скролл остаётся плавным */
+const SMALL=matchMedia('(max-width:900px)').matches;const FRAME=SMALL?42:32;
+let SCROLLING=false,scrollT;addEventListener('scroll',()=>{SCROLLING=true;clearTimeout(scrollT);scrollT=setTimeout(()=>SCROLLING=false,140)},{passive:true});
 function mount(canvas,opts){
-  const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:true});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.25));
+  const renderer=new T.WebGLRenderer({canvas,antialias:!SMALL,alpha:true,powerPreference:'high-performance'});
+  renderer.setPixelRatio(SMALL?1:Math.min(window.devicePixelRatio||1,1.25));
   renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=opts.exp||.9;renderer.outputColorSpace=T.SRGBColorSpace;
   const scene=new T.Scene();scene.environment=envMap(renderer);
   const cam=new T.PerspectiveCamera(opts.fov||30,1,.1,100);cam.position.set(0,opts.camY||.8,opts.dist||13);cam.lookAt(0,opts.lookY||0,0);
@@ -1140,11 +1205,11 @@ function mount(canvas,opts){
   const t0=performance.now();
   let last=0;
   function loop(now){const t=(now-t0)/1000;
-    if((vis||reduce)&&now-last>=32){last=now;f.rotation.y=reduce?.35:Math.sin(t*.45)*.55+mx*.7;f.rotation.x=.08+my*.15;f.rotation.z=reduce?0:Math.sin(t*.6)*.03;f.position.y=(opts.y||0)-.1+(reduce?0:Math.sin(t*.9)*.08);renderer.render(scene,cam)}
+    if((vis||reduce)&&!SCROLLING&&now-last>=FRAME){last=now;f.rotation.y=reduce?.35:Math.sin(t*.45)*.55+mx*.7;f.rotation.x=.08+my*.15;f.rotation.z=reduce?0:Math.sin(t*.6)*.03;f.position.y=(opts.y||0)-.1+(reduce?0:Math.sin(t*.9)*.08);renderer.render(scene,cam)}
     if(!reduce)requestAnimationFrame(loop)}
   requestAnimationFrame(loop);
 }
-mount(document.getElementById('filter3d-quiz'),{dist:14.5,camY:1,lookY:0,fov:30,scale:1,floor:true});
+mount(document.getElementById('filter3d-quiz'),{dist:14.5,camY:1,lookY:0,fov:30,scale:1});
 mount(document.getElementById('filter3d-why'),{dist:12.5,camY:.6,lookY:.2,fov:30,scale:1,y:.1,exp:.9,rim:1.8,rimCol:0x8a98f0});
 })();
 </script>
