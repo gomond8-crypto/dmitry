@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+</head><body>
 <title>ВодоЛаб 74 · дизайн-макет</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -875,7 +876,6 @@ p{margin:0}
   <a href="#tg" aria-label="Написать в Telegram"><svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 3.5 2.8 10.7c-.9.4-.9 1.6.1 1.9l4.6 1.4 1.8 5.6c.3.8 1.3 1 1.9.4l2.6-2.5 4.8 3.5c.7.5 1.6.1 1.8-.7L23 4.8c.2-1-.7-1.7-1.5-1.3Zm-3.8 4.2-8.4 7.5-.3 3.2-1.4-4.6 9.7-6.4c.4-.3.7.1.4.3Z" fill="#fff"/></svg></a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
 (function(){
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1075,8 +1075,15 @@ document.getElementById('orderForm').addEventListener('submit',e=>{e.preventDefa
 })();
 
 /* ---------- 3D-фильтр (three.js) для квиза и «Почему мы» ---------- */
-if(!window.THREE)return;
-const T=THREE;
+/* ---------- 3D-фильтр (three.js) для квиза и «Почему мы» ----------
+   three.js грузится только после загрузки страницы, когда браузер свободен.
+   Один WebGL-контекст на оба блока: холст переезжает в видимый блок.
+   Модель вращается сама, мышью не управляется. До готовности 3D видно статичное фото. */
+const SMALL=matchMedia('(max-width:900px)').matches;
+if(SMALL||reduce)return;
+let T;
+const idle=(ms)=>new Promise(r=>('requestIdleCallback' in window)?requestIdleCallback(()=>r(),{timeout:ms||1200}):setTimeout(r,60));
+function loadThree(){return new Promise((res,rej)=>{if(window.THREE)return res(window.THREE);const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js';sc.async=true;sc.onload=()=>res(window.THREE);sc.onerror=rej;document.head.appendChild(sc)})}
 function fiberTexture(){
   // картридж из намотанной нити, как на фото: белый, мелкие горизонтальные витки
   const c=document.createElement('canvas');c.width=1024;c.height=1024;const g=c.getContext('2d');
@@ -1186,39 +1193,66 @@ function buildFilter(){
   return g;
 }
 
-/* во время прокрутки 3D не перерисовывается: скролл остаётся плавным */
-const SMALL=matchMedia('(max-width:900px)').matches;const FRAME=SMALL?42:32;
-let SCROLLING=false,scrollT;addEventListener('scroll',()=>{SCROLLING=true;clearTimeout(scrollT);scrollT=setTimeout(()=>SCROLLING=false,140)},{passive:true});
-function mount(canvas,opts){
-  const renderer=new T.WebGLRenderer({canvas,antialias:!SMALL,alpha:true,powerPreference:'high-performance'});
-  renderer.setPixelRatio(SMALL?1:Math.min(window.devicePixelRatio||1,1.25));
-  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=opts.exp||.9;renderer.outputColorSpace=T.SRGBColorSpace;
-  const scene=new T.Scene();scene.environment=envMap(renderer);
-  const cam=new T.PerspectiveCamera(opts.fov||30,1,.1,100);cam.position.set(0,opts.camY||.8,opts.dist||13);cam.lookAt(0,opts.lookY||0,0);
+
+const VIEWS=[
+  {box:document.getElementById('filter3d-quiz').parentElement,dist:14.5,camY:1,lookY:0,y:0},
+  {box:document.getElementById('filter3d-why').parentElement,dist:12.5,camY:.6,lookY:.2,y:.1}
+];
+const canvas=document.getElementById('filter3d-quiz');document.getElementById('filter3d-why').remove();
+async function start3D(){
+  T=await loadThree();await idle();
+  const renderer=new T.WebGLRenderer({canvas,antialias:true,alpha:true,powerPreference:'high-performance'});
+  let PR=Math.min(window.devicePixelRatio||1,1.5);renderer.setPixelRatio(PR);
+  renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=.9;renderer.outputColorSpace=T.SRGBColorSpace;
+  const scene=new T.Scene();await idle();scene.environment=envMap(renderer);
+  const cam=new T.PerspectiveCamera(30,1,.1,100);
   scene.add(new T.HemisphereLight(0xffffff,0x39437a,.28));
   const key=new T.DirectionalLight(0xffffff,1.45);key.position.set(5,6,5);scene.add(key);
-  const rim=new T.DirectionalLight(opts.rimCol||0x8796e8,opts.rim||1.6);rim.position.set(-5,3,-6);scene.add(rim);
-  const rim2=new T.DirectionalLight(opts.rimCol||0x8796e8,(opts.rim||1.6)*.7);rim2.position.set(6,1,-5);scene.add(rim2);
-  const f=buildFilter();f.scale.setScalar(opts.scale||1);if(opts.y)f.position.y+=opts.y;scene.add(f);
-  // мягкая тень под фильтром (только в квизе)
-  if(opts.floor){
-  const sc=document.createElement('canvas');sc.width=sc.height=256;const sg=sc.getContext('2d');const gr=sg.createRadialGradient(128,128,0,128,128,128);
-  gr.addColorStop(0,'rgba(14,20,53,.55)');gr.addColorStop(.5,'rgba(14,20,53,.22)');gr.addColorStop(1,'rgba(14,20,53,0)');sg.fillStyle=gr;sg.fillRect(0,0,256,256);
-  const sh=new T.Mesh(new T.PlaneGeometry(5,1.6),new T.MeshBasicMaterial({map:new T.CanvasTexture(sc),transparent:true,depthWrite:false}));sh.rotation.x=-Math.PI/2;sh.position.y=(opts.y||0)-3.05;scene.add(sh);}
-  let mx=0,my=0;canvas.parentElement.addEventListener('pointermove',e=>{const r=canvas.getBoundingClientRect();mx=(e.clientX-r.left)/r.width-.5;my=(e.clientY-r.top)/r.height-.5});
+  const rim=new T.DirectionalLight(0x8a98f0,1.7);rim.position.set(-5,3,-6);scene.add(rim);
+  const rim2=new T.DirectionalLight(0x8a98f0,1.2);rim2.position.set(6,1,-5);scene.add(rim2);
+  await idle();const f=buildFilter();scene.add(f);
+  await idle();
+  if(renderer.compileAsync)await renderer.compileAsync(scene,cam);else renderer.compile(scene,cam);
+  let cur=null;
   function size(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
-  size();new ResizeObserver(size).observe(canvas);
-  let vis=false;new IntersectionObserver(e=>{vis=e[0].isIntersecting}).observe(canvas);
-  const t0=performance.now();
-  let last=0;
-  function loop(now){const t=(now-t0)/1000;
-    if((vis||reduce)&&!SCROLLING&&now-last>=FRAME){last=now;f.rotation.y=reduce?.35:Math.sin(t*.45)*.55+mx*.7;f.rotation.x=.08+my*.15;f.rotation.z=reduce?0:Math.sin(t*.6)*.03;f.position.y=(opts.y||0)-.1+(reduce?0:Math.sin(t*.9)*.08);renderer.render(scene,cam)}
-    if(!reduce)requestAnimationFrame(loop)}
+  new ResizeObserver(size).observe(canvas);
+  function use(v){if(cur===v)return;if(cur)cur.box.classList.remove('live');cur=v;
+    v.box.insertBefore(canvas,v.box.querySelector('.filter-still'));
+    cam.position.set(0,v.camY,v.dist);cam.lookAt(0,v.lookY,0);size();draw(performance.now());requestAnimationFrame(()=>v.box.classList.add('live'))}
+  let onScreen=false,pend=false;
+  function pick(){pend=false;let best=null,bh=0;for(const v of VIEWS){const r=v.box.getBoundingClientRect();const h=Math.min(r.bottom,innerHeight)-Math.max(r.top,0);if(h>bh){bh=h;best=v}}
+    onScreen=bh>0;if(best&&bh>0)use(best)}
+  addEventListener('scroll',()=>{if(!pend){pend=true;requestAnimationFrame(pick)}},{passive:true});addEventListener('resize',pick);pick();
+  const t0=performance.now();let slow=0;
+  function draw(now){const t=(now-t0)/1000,v=cur||VIEWS[0];
+    f.rotation.y=.35+Math.sin(t*.42)*.6;f.rotation.x=.08;f.rotation.z=Math.sin(t*.6)*.025;f.position.y=v.y-.15+Math.sin(t*.9)*.08;
+    const a=performance.now();renderer.render(scene,cam);
+    // если кадр рисуется долго, снижаем чёткость, чтобы не было лагов
+    if(performance.now()-a>14){if(++slow>20&&PR>.75){PR=Math.max(.75,PR-.25);renderer.setPixelRatio(PR);size();slow=0}}else slow=Math.max(0,slow-1)}
+  function loop(now){if(cur&&onScreen&&!document.hidden)draw(now);requestAnimationFrame(loop)}
   requestAnimationFrame(loop);
 }
-if(!SMALL)mount(document.getElementById('filter3d-quiz'),{dist:SMALL?19:14.5,camY:1,lookY:0,fov:30,scale:1});
-if(!SMALL)mount(document.getElementById('filter3d-why'),{dist:SMALL?17.5:12.5,camY:.6,lookY:SMALL?-.2:.2,fov:30,scale:1,y:.1,exp:.9,rim:1.8,rimCol:0x8a98f0});
+const go=()=>idle(2500).then(start3D).catch(()=>{});
+if(document.readyState==='complete')go();else addEventListener('load',go,{once:true});
 })();
 </script>
 
+<style id="fixes-2026-10-11b">
+/* 3D: до загрузки модели показываем статичное фото, затем плавно меняем на 3D */
+@media (min-width:901px){
+  .filter-still{display:block;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(86%,560px);height:auto;max-height:90%;object-fit:contain;pointer-events:none;user-select:none;transition:opacity .7s ease}
+  .device canvas,.why .stage canvas{opacity:0;transition:opacity .7s ease}
+  .device.live canvas,.why .stage.live canvas{opacity:1}
+  .live .filter-still{opacity:0}
+}
+/* Таймлайн обслуживания: вертикальный, подписи не налезают */
+.tl{display:flex;flex-direction:column;gap:14px;padding:4px 0;margin:0;list-style:none}
+.tl::before{content:none}
+.tl li{position:relative;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 0 0 28px;font-size:14px;line-height:1.35;color:var(--ink)}
+.tl li::before{left:0;top:3px}
+.tl li.next::before{top:3px}
+.tl li:not(:last-child)::after{content:"";position:absolute;left:6px;top:19px;bottom:-15px;width:2px;background:var(--green)}
+.tl li:has(+ .next)::after{background:repeating-linear-gradient(var(--green) 0 4px,transparent 4px 8px)}
+.tl li span{display:inline;flex:none;white-space:nowrap;font-size:13px;color:var(--muted)}
+</style>
 </body></html>
